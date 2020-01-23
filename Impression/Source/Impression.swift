@@ -9,6 +9,9 @@ import UIKit
 
 let filterThumbnailSize = CGSize(width: 120, height: 150)
 
+public var cancelTitle = "Cancel"
+public var confirmTitle = "Confirm"
+
 public enum LocaleLanguageCode: String {
     case English = "en"
     case SimplifiedChinese = "zh-Hans"
