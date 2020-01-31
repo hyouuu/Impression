@@ -7,7 +7,11 @@
 
 import UIKit
 
-let filterThumbnailSize = CGSize(width: 120, height: 150)
+public var filterThumbnailWidth: CGFloat = 120
+public var filterThumbnailLabelHeight: CGFloat = 30
+public var filterThumbnailLabelFont: UIFont = .systemFont(ofSize: 15)
+public var filterThumbnailHighlightColor: UIColor = .blue
+public var filterThumbnailHighlightBorderWidth: CGFloat = 4
 
 public var cancelTitle = "Cancel"
 public var confirmTitle = "Confirm"
