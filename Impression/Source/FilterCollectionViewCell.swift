@@ -24,6 +24,7 @@ class FilterCollectionViewCell: UICollectionViewCell {
         imageView?.clipsToBounds = true
         
         titleLabel = UILabel(frame: CGRect(x: 0, y: imageView!.frame.maxY, width: frame.width, height: frame.height - imageView!.frame.height))
+        titleLabel?.font = filterThumbnailLabelFont
         titleLabel?.textAlignment = .center
         titleLabel?.text = title
         titleLabel?.textColor = .lightGray
@@ -55,9 +56,9 @@ class FilterCollectionViewCell: UICollectionViewCell {
     }
     
     func setFocus() {
-        imageView?.layer.borderWidth = 4
-        imageView?.layer.borderColor = UIColor.blue.cgColor
-        titleLabel?.textColor = .blue
+        imageView?.layer.borderWidth = filterThumbnailHighlightBorderWidth
+        imageView?.layer.borderColor = filterThumbnailHighlightColor.cgColor
+        titleLabel?.textColor = filterThumbnailHighlightColor
         
         NotificationCenter.default.post(name: .cellBeingSelected, object: self)
     }
