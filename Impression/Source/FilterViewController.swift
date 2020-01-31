@@ -27,7 +27,15 @@ public class FilterViewController: UIViewController {
     
     let containerHeight: CGFloat = 160
     
-    let image: UIImage
+    public var image: UIImage {
+        didSet {
+            setUIWith(image)
+            updateDemoView()
+        }
+    }
+
+    var demoViewBigImage: UIImage?
+
     var demoView: FilterDemoImageView?
     var selectedFilter: FilterProtocol?
     var filterCollectionView: FilterCollectionView?
@@ -38,9 +46,9 @@ public class FilterViewController: UIViewController {
     
     var mode: FilterViewControllerMode = .normal
     
-    var delegate: FilterViewControllerDelegate?
+    public var delegate: FilterViewControllerDelegate?
     
-    init(image: UIImage, mode: FilterViewControllerMode = .normal) {
+    public init(image: UIImage, mode: FilterViewControllerMode = .normal) {
         self.image = image
         self.mode = mode
         super.init(nibName: nil, bundle: nil)
@@ -75,8 +83,10 @@ public class FilterViewController: UIViewController {
     func setUIWith(_ image: UIImage) {
         let bigImageHeight = max(view.frame.width - containerHeight, view.frame.height - containerHeight)
         guard let bigImage = resizeImage(image: image, targetSize: CGSize(width: bigImageHeight, height: bigImageHeight)) else {
+            demoViewBigImage = nil
             return
         }
+        demoViewBigImage = bigImage
         
         guard let smallImage = resizeImage(image: image, targetSize: CGSize(width: containerHeight - 10, height: containerHeight - 10)) else {
             return
@@ -90,7 +100,7 @@ public class FilterViewController: UIViewController {
         
         let layout: UICollectionViewFlowLayout = UICollectionViewFlowLayout()
         layout.sectionInset = UIEdgeInsets(top: 2, left: 2, bottom: 2, right: 2)
-        layout.itemSize = filterThumbnailSize
+        layout.itemSize = CGSize(width: filterThumbnailWidth, height: filterThumbnailWidth + filterThumbnailLabelHeight)
         
         if filterCollectionView == nil {
             filterCollectionView = FilterCollectionView(frame: view.bounds, collectionViewLayout: layout)
@@ -103,8 +113,13 @@ public class FilterViewController: UIViewController {
         filterCollectionView?.didSelectFilter = {[weak self] filter in
             guard let self = self else { return }
             self.selectedFilter = filter
-            self.demoView?.image = filter.process(image: bigImage)
+            self.updateDemoView()
         }
+    }
+
+    func updateDemoView() {
+        guard let filter = selectedFilter, let bigImage = demoViewBigImage else { return }
+        demoView?.image = filter.process(image: bigImage)
     }
     
     public override func viewWillAppear(_ animated: Bool) {
@@ -247,7 +262,7 @@ extension FilterViewController {
 
 // Public API
 extension FilterViewController {
-    func applySelectedFilter() -> UIImage? {
+    public func applySelectedFilter() -> UIImage? {
         return selectedFilter?.process(image: image)
     }
     
