@@ -19,7 +19,7 @@ public var confirmTitle = "Confirm"
 public enum LocaleLanguageCode: String {
     case English = "en"
     case SimplifiedChinese = "zh-Hans"
-    case TraditionalChiniese = "zh-Hant"
+    case TraditionalChinese = "zh-Hant"
     case Japanese = "ja"
     case French = "fa"
     case Spanish = "es"
