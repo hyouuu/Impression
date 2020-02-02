@@ -24,9 +24,6 @@ public enum FilterViewControllerMode {
 }
 
 public class FilterViewController: UIViewController {
-    
-    let containerHeight: CGFloat = 160
-    
     public var image: UIImage {
         didSet {
             setUIWith(image)
@@ -81,14 +78,14 @@ public class FilterViewController: UIViewController {
     }
     
     func setUIWith(_ image: UIImage) {
-        let bigImageHeight = max(view.frame.width - containerHeight, view.frame.height - containerHeight)
+        let bigImageHeight = max(view.frame.width - filterThumbnailContainerHeight, view.frame.height - filterThumbnailContainerHeight)
         guard let bigImage = resizeImage(image: image, targetSize: CGSize(width: bigImageHeight, height: bigImageHeight)) else {
             demoViewBigImage = nil
             return
         }
         demoViewBigImage = bigImage
         
-        guard let smallImage = resizeImage(image: image, targetSize: CGSize(width: containerHeight - 10, height: containerHeight - 10)) else {
+        guard let smallImage = resizeImage(image: image, targetSize: CGSize(width: filterThumbnailContainerHeight - 10, height: filterThumbnailContainerHeight - 10)) else {
             return
         }
         
@@ -163,8 +160,8 @@ public class FilterViewController: UIViewController {
         stackView?.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor).isActive = true
         stackView?.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor).isActive = true
         
-        containerVerticalHeightConstraint = collectionView.heightAnchor.constraint(equalToConstant: containerHeight)
-        containerHorizontalWidthConstraint = collectionView.widthAnchor.constraint(equalToConstant: containerHeight)
+        containerVerticalHeightConstraint = collectionView.heightAnchor.constraint(equalToConstant: filterThumbnailContainerHeight)
+        containerHorizontalWidthConstraint = collectionView.widthAnchor.constraint(equalToConstant: filterThumbnailContainerHeight)
     }
     
     fileprivate func updateLayout() {
