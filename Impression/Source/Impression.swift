@@ -7,6 +7,7 @@
 
 import UIKit
 
+public var filterThumbnailContainerHeight: CGFloat = 160
 public var filterThumbnailWidth: CGFloat = 120
 public var filterThumbnailLabelHeight: CGFloat = 30
 public var filterThumbnailLabelFont: UIFont = .systemFont(ofSize: 15)
