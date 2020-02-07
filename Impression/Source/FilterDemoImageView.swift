@@ -9,7 +9,8 @@ import UIKit
 
 class FilterDemoImageView: UIView {
     
-    private var orignalImage: UIImage?
+    var originalImage: UIImage?
+    
     var image: UIImage? {
         didSet {
             guard let imageView = imageView else {
@@ -23,13 +24,9 @@ class FilterDemoImageView: UIView {
     
     init(frame: CGRect, image: UIImage?) {
         super.init(frame: frame)
+        self.originalImage = image
         self.image = image
-        guard let image = image, let cgImage = image.cgImage?.copy() else {
-            return
-        }
 
-        orignalImage = UIImage(cgImage: cgImage, scale: image.scale, orientation: image.imageOrientation)
-        
         imageView = UIImageView(frame: bounds)
         imageView?.contentMode = .scaleAspectFit
         imageView?.image = image
@@ -53,7 +50,7 @@ class FilterDemoImageView: UIView {
     }
     
     func restoreToOriginalImage() {
-        imageView?.image = orignalImage
+        imageView?.image = originalImage
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
