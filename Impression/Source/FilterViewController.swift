@@ -24,14 +24,26 @@ public enum FilterViewControllerMode {
 }
 
 public class FilterViewController: UIViewController {
-    public var image: UIImage {
-        didSet {
-            setUIWith(image)
-            updateDemoView()
-        }
+
+    // MARK: Public APIs
+
+    public func updateImage(_ image: UIImage) {
+        self.image = image
+        setUIWith(image)
+        updateDemoView()
     }
 
-    var demoViewBigImage: UIImage?
+    public func applySelectedFilter() -> UIImage? {
+        return selectedFilter?.process(image: image)
+    }
+
+    public func process(_ image: UIImage) -> UIImage? {
+        return selectedFilter?.process(image: image)
+    }
+
+    // MARK: Privates
+
+    private(set) var image: UIImage
 
     var demoView: FilterDemoImageView?
     var selectedFilter: FilterProtocol?
@@ -44,13 +56,11 @@ public class FilterViewController: UIViewController {
     var mode: FilterViewControllerMode = .normal
     
     public var delegate: FilterViewControllerDelegate?
-    
-    public init(image: UIImage, mode: FilterViewControllerMode = .normal) {
-        self.image = image
-        self.mode = mode
-        super.init(nibName: nil, bundle: nil)
 
-        setUIWith(image)
+    public init(image: UIImage, mode: FilterViewControllerMode = .normal) {
+        self.mode = mode
+        self.image = image
+        super.init(nibName: nil, bundle: nil)
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
@@ -64,8 +74,8 @@ public class FilterViewController: UIViewController {
             
             createToolbar()
         }
-        
-        setUIWith(image)
+
+        updateImage(image)
         
         stackView = UIStackView()
         view.addSubview(stackView!)
@@ -74,23 +84,37 @@ public class FilterViewController: UIViewController {
         setCollectionViewDirection()
         updateLayout()
         
-        NotificationCenter.default.addObserver(self, selector: #selector(rotated), name: UIApplication.didChangeStatusBarOrientationNotification, object: nil)
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(rotated),
+                                               name: UIApplication.didChangeStatusBarOrientationNotification,
+                                               object: nil)
     }
     
     func setUIWith(_ image: UIImage) {
-        let bigImageHeight = max(view.frame.width - filterThumbnailContainerHeight, view.frame.height - filterThumbnailContainerHeight)
-        guard let bigImage = resizeImage(image: image, targetSize: CGSize(width: bigImageHeight, height: bigImageHeight)) else {
-            demoViewBigImage = nil
-            return
+        let bigImageHeight = max(view.frame.width - filterThumbnailContainerHeight,
+                                 view.frame.height - filterThumbnailContainerHeight) * UIScreen.main.scale
+
+        let bigImage: UIImage
+
+        if bigImageHeight >= image.size.height {
+            bigImage = image
+
+        } else {
+            let targetSize = CGSize(width: bigImageHeight, height: bigImageHeight)
+
+            guard let resized = resizeImage(image: image, targetSize: targetSize) else { return }
+
+            bigImage = resized
         }
-        demoViewBigImage = bigImage
-        
-        guard let smallImage = resizeImage(image: image, targetSize: CGSize(width: filterThumbnailContainerHeight - 10, height: filterThumbnailContainerHeight - 10)) else {
-            return
-        }
+
+        let smallTargetSize = CGSize(width: filterThumbnailContainerHeight - 10,
+                                     height: filterThumbnailContainerHeight - 10)
+
+        guard let smallImage = resizeImage(image: image, targetSize: smallTargetSize) else { return }
         
         if demoView == nil {
             demoView = FilterDemoImageView(frame: .zero, image: bigImage)
+
         } else {
             demoView?.image = bigImage
         }
@@ -107,7 +131,7 @@ public class FilterViewController: UIViewController {
         filterCollectionView?.image = smallImage
         filterCollectionView?.viewModel = FilterCollectionViewModel()
 
-        filterCollectionView?.didSelectFilter = {[weak self] filter in
+        filterCollectionView?.didSelectFilter = { [weak self] filter in
             guard let self = self else { return }
             self.selectedFilter = filter
             self.updateDemoView()
@@ -115,8 +139,8 @@ public class FilterViewController: UIViewController {
     }
 
     func updateDemoView() {
-        guard let filter = selectedFilter, let bigImage = demoViewBigImage else { return }
-        demoView?.image = filter.process(image: bigImage)
+        guard let filter = selectedFilter, let demoImage = demoView?.originalImage else { return }
+        demoView?.image = filter.process(image: demoImage)
     }
     
     public override func viewWillAppear(_ animated: Bool) {
@@ -125,9 +149,7 @@ public class FilterViewController: UIViewController {
     }
     
     func setCollectionViewDirection() {
-        guard let flowLayout = filterCollectionView?.collectionViewLayout as? UICollectionViewFlowLayout else {
-            return
-        }
+        guard let flowLayout = filterCollectionView?.collectionViewLayout as? UICollectionViewFlowLayout else { return }
 
         if UIDevice.current.orientation.isLandscape {
             flowLayout.scrollDirection = .vertical
@@ -148,13 +170,11 @@ public class FilterViewController: UIViewController {
     }
     
     fileprivate func initLayout() {
-        guard let collectionView = filterCollectionView else {
-            return
-        }
-        
-        stackView?.translatesAutoresizingMaskIntoConstraints = false
+        guard let collectionView = filterCollectionView else { return }
+
         collectionView.translatesAutoresizingMaskIntoConstraints = false
-        
+        stackView?.translatesAutoresizingMaskIntoConstraints = false
+
         stackView?.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
         stackView?.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
         stackView?.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor).isActive = true
@@ -165,9 +185,7 @@ public class FilterViewController: UIViewController {
     }
     
     fileprivate func updateLayout() {
-        guard let demoView = demoView, let collectionView = filterCollectionView else {
-            return
-        }
+        guard let demoView = demoView, let collectionView = filterCollectionView else { return }
         
         stackView?.removeArrangedSubview(demoView)
         stackView?.removeArrangedSubview(collectionView)
@@ -180,6 +198,7 @@ public class FilterViewController: UIViewController {
             
             containerHorizontalWidthConstraint?.isActive = false
             containerVerticalHeightConstraint?.isActive = true
+
         } else {
             stackView?.axis = .horizontal
             
@@ -204,7 +223,7 @@ public class FilterViewController: UIViewController {
         
         // Figure out what our orientation is, and use that to form the rectangle
         var newSize: CGSize
-        if(widthRatio > heightRatio) {
+        if widthRatio > heightRatio {
             newSize = CGSize(width: size.width * heightRatio, height: size.height * heightRatio)
         } else {
             newSize = CGSize(width: size.width * widthRatio,  height: size.height * widthRatio)
@@ -214,7 +233,7 @@ public class FilterViewController: UIViewController {
         let rect = CGRect(x: 0, y: 0, width: newSize.width, height: newSize.height)
         
         // Actually do the resizing to the rect using the ImageContext stuff
-        UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
+        UIGraphicsBeginImageContextWithOptions(newSize, false, UIScreen.main.scale)
         image.draw(in: rect)
         let newImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
@@ -254,16 +273,5 @@ extension FilterViewController {
                 self.dismiss(animated: true)
             }
         }
-    }
-}
-
-// Public API
-extension FilterViewController {
-    public func applySelectedFilter() -> UIImage? {
-        return selectedFilter?.process(image: image)
-    }
-    
-    public func process(_ image: UIImage) -> UIImage? {
-        return selectedFilter?.process(image: image)
     }
 }
