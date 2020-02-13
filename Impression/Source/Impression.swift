@@ -17,6 +17,8 @@ public var filterThumbnailHighlightBorderWidth: CGFloat = 4
 public var cancelTitle = "Cancel"
 public var confirmTitle = "Confirm"
 
+public var overrideLocaleCode: String?
+
 public enum LocaleLanguageCode: String {
     case English = "en"
     case SimplifiedChinese = "zh-Hans"
