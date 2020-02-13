@@ -68,7 +68,7 @@ extension CollectionDataSource where Model == (filter: FilterProtocol, image: UI
             func setupCell() {
                 guard let image = imageProcessor.filter.process(image: imageProcessor.image) else { return }
 
-                let locale = Bundle.main.preferredLocalizations.first ?? "en"
+                let locale = overrideLocaleCode ?? Bundle.main.preferredLocalizations.first ?? "en"
                 let title = imageProcessor.filter.getDisplayNameByLocale(locale)
                 cell.setup(image: image, title: title)
                 
