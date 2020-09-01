@@ -116,6 +116,7 @@ public class FilterViewController: UIViewController {
             demoView = FilterDemoImageView(frame: .zero, image: bigImage)
 
         } else {
+            demoView?.originalImage = bigImage
             demoView?.image = bigImage
         }
         
